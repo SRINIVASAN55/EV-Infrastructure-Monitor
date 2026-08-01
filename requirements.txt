@@ -1,0 +1,2 @@
+# EV-Infrastructure-Monitor uses Python stdlib only — no pip install needed!
+# Python 3.8+ required
