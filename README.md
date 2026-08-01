@@ -1,83 +1,126 @@
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=rect&color=gradient&customColorList=5&height=80&text=⚡%20EV%20Infrastructure%20Monitor&fontSize=28&fontColor=ffffff" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=rect&color=gradient&customColorList=5,10&height=60&text=⚡+EV+INFRASTRUCTURE+MONITOR&fontSize=22&fontColor=ffffff&fontAlignY=65" width="100%"/>
 
-[![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
-[![No Dependencies](https://img.shields.io/badge/stdlib-only-green?style=for-the-badge)]()
-[![Endpoints](https://img.shields.io/badge/Endpoints-6000+-orange?style=for-the-badge)]()
-[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+<br/>
 
-**Enterprise EV charging infrastructure monitoring & ops automation.**  
-Monitors thousands of EV charging endpoints via REST API health checks, detects offline/fault/degraded stations, opens incidents, collects enriched logs, and generates operational reports — entirely on Python stdlib.
+[![Endpoints](https://img.shields.io/badge/Scale-6000%2B_Endpoints-FFD700?style=for-the-badge)]()
+[![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)]()
+[![Threads](https://img.shields.io/badge/Multithreaded-20%2B_Workers-39ff14?style=for-the-badge)]()
+[![Incidents](https://img.shields.io/badge/P1%2FP2%2FP3-Incident_Management-ff4444?style=for-the-badge)]()
 
-*Inspired by real NOC operations at scale.*
+**Enterprise-grade monitoring for EV charging infrastructure.**  
+*Inspired by real NOC operations. Built for scale.*
 
 </div>
 
 ---
 
-## ✨ Features
+## 🏭 The Scale Problem
 
-| Feature | Description |
-|---|---|
-| ⚡ **Multi-threaded Polling** | Concurrent health checks across 6000+ endpoints |
-| 🏥 **Health Check Engine** | REST API polling with timeout, retry, and error classification |
-| 🚨 **Incident Management** | Auto-opens P1/P2/P3 incidents; resolves on recovery |
-| 📊 **Live Dashboard** | Real-time terminal dashboard with fleet status breakdown |
-| 📝 **Log Collector** | Enriched JSONL logs per station per check cycle |
-| 📈 **Ops Reports** | JSON reports with fleet availability %, status breakdown |
-| 🔄 **State Machine** | ONLINE → OFFLINE → FAULT → DEGRADED → RECOVERY |
-| 🎭 **Simulator Mode** | Built-in station simulator — no hardware needed to demo |
+> You're running a fleet of 6,000+ EV charging stations across 50 cities.  
+> At any given moment, dozens are offline, degraded, or in fault.  
+> Your NOC team gets 300 alerts a day. Manual triage takes hours.  
+
+**EV-Infrastructure-Monitor** solves this with automated health polling, smart incident classification, and actionable ops reports — so your team focuses on what matters.
 
 ---
 
-## 🚀 Quick Start
+## 📊 Live Fleet Dashboard
+
+```
+  Last Check: 2024-01-15 12:34:01  |  Total Checks: 8,420  |  Open Incidents: 7
+  ─────────────────────────────────────────────────────────────────────
+  ● ONLINE     :   4,312  (71%)     ⚡ CHARGING   :  1,089
+  ✖ OFFLINE    :     234            ~ DEGRADED    :     98
+  ⚠ FAULT      :      67            ⚡ Total Power : 89,432 kW
+    Avg Response:      43 ms
+
+  ⚠ PROBLEM STATIONS (10 shown):
+  [OFFLINE  ] EVSE-0023   Chennai - Adyar          (failures: 3)
+  [FAULT    ] EVSE-0041   Bangalore - Whitefield    (failures: 2)
+  [DEGRADED ] EVSE-0112   Mumbai - BKC              (failures: 1)
+
+  [P1] INC-3A7F2C: Station-0023 — OFFLINE → Escalated to L2
+  [P2] INC-B91E44: Station-0041 — FAULT   → GROUND_FAULT error
+```
+
+---
+
+## 🚨 Incident Severity System
+
+```
+Station reports OFFLINE (3 consecutive failures)
+         │
+         ▼
+    ┌─────────────┐
+    │  P1 Incident│ ← Immediate escalation, L2/L3 alert
+    │  EV is DOWN │
+    └─────────────┘
+
+Station reports FAULT (hardware error code)
+         │
+         ▼
+    ┌─────────────┐
+    │  P2 Incident│ ← Field technician dispatch
+    │  GROUND_FAULT│
+    └─────────────┘
+
+Station recovers → Incident auto-resolved ✓
+```
+
+---
+
+## 🚀 Run It
 
 ```bash
-git clone https://github.com/SRINIVASAN55/EV-Infrastructure-Monitor.git
+git clone https://github.com/SRINIVASAN55/EV-Infrastructure-Monitor
 cd EV-Infrastructure-Monitor
 
-# Demo mode — simulates 50 EV charging stations
+# Demo mode — simulates 50 EV stations instantly
 python ev_monitor.py
 
-# Scale up — 200 stations, 15s interval
-python ev_monitor.py -n 200 -i 15 -w 50
+# Scale to 500 stations, 15s interval, 50 workers
+python ev_monitor.py -n 500 -i 15 -w 50
 
-# Real API mode
-python ev_monitor.py --api-base http://your-charger-api.com --no-sim -n 6000
+# Real API mode (your ChargePoint/OCPP API)
+python ev_monitor.py --api-base https://api.your-network.com --no-sim -n 6000
 ```
 
 ---
 
-## 📊 Live Dashboard
+## 📄 Ops Report (JSON)
 
-```
-  Fleet Size : 50 endpoints  |  Open Incidents: 3
+Generated after every run:
 
-  ● ONLINE     :    38 (76%)     ⚡ CHARGING   :    6
-  ✖ OFFLINE    :     4           ~ DEGRADED    :    2
-  ⚠ FAULT      :     2           ⚡ Total Power : 842 kW
-    Avg Response:    47 ms
-
-  ─────────────────────────────────────────────────
-  ⚠ PROBLEM STATIONS (8):
-  [OFFLINE  ] EVSE-0023  Station-0023  Chennai - Adyar     (failures: 3)
-  [FAULT    ] EVSE-0041  Station-0041  Bangalore - Whitefield  (failures: 2)
-  [P2] INC-3A7F2C: Station-0041 — FAULT
+```json
+{
+  "fleet_size": 6000,
+  "availability_pct": 91.4,
+  "status_breakdown": {
+    "ONLINE": 4312, "CHARGING": 1089,
+    "OFFLINE": 234, "FAULT": 67, "DEGRADED": 98
+  },
+  "open_incidents": 7,
+  "total_power_kw": 89432
+}
 ```
 
 ---
 
-## 🔁 Incident Severity
+## 🗂️ Log Structure
 
-| Status | Severity | Description |
-|---|---|---|
-| OFFLINE | **P1** | Station unreachable — immediate action |
-| FAULT | **P2** | Hardware fault detected — investigate |
-| DEGRADED | **P3** | Partial failure — monitor closely |
+Every check cycle writes to `logs/ev_monitor_YYYY-MM-DD.jsonl`:
+
+```jsonl
+{"timestamp":"...","station_id":"EVSE-0023","status":"OFFLINE","response_ms":0,"errors":[]}
+{"timestamp":"...","station_id":"EVSE-0041","status":"FAULT","errors":["GROUND_FAULT"]}
+```
 
 ---
 
-## 📄 License
-
-MIT License © 2024 [Srinivasan S](https://github.com/SRINIVASAN55)
+<p align="center">
+Built by <a href="https://github.com/SRINIVASAN55">SRINIVASAN55</a> ·
+<a href="https://linkedin.com/in/srinivasan132">LinkedIn</a> ·
+Inspired by real NOC operations @ ChargePoint
+</p>
