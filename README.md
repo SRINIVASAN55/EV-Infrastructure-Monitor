@@ -1,5 +1,9 @@
 # EV-Infrastructure-Monitor
 
+![CI](https://github.com/SRINIVASAN55/EV-Infrastructure-Monitor/actions/workflows/ci.yml/badge.svg) ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg) ![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
+
+
+
 **Fleet-scale monitoring for EV charging infrastructure**
 
 Monitors health, session data, and fault conditions across thousands of EV charging stations — designed for the operational reality of large charging networks where one dead station costs real money.
