@@ -12,27 +12,102 @@ Built and tested against networks of **6,000+ endpoints** across multiple geogra
 
 ---
 
-## What it tracks
+## Prerequisites
+
+| Requirement | Details |
+|-------------|---------|
+| Python | 3.8 or higher |
+| OS | Linux, macOS, Windows |
+| Network | Access to charging station API or OCPP endpoint |
+
+```bash
+python3 --version    # must be 3.8+
+```
+
+---
+
+## Installation
+
+```bash
+git clone https://github.com/SRINIVASAN55/EV-Infrastructure-Monitor.git
+cd EV-Infrastructure-Monitor
+pip install -r requirements.txt
+```
+
+---
+
+## Running It
+
+### Simulate a network — no real hardware needed
+```bash
+# Simulate 50 charging stations (default)
+python3 ev_monitor.py
+
+# Simulate a larger fleet
+python3 ev_monitor.py --count 200
+python3 ev_monitor.py -n 200
+
+# Simulate 500 stations with 40 worker threads for speed
+python3 ev_monitor.py --count 500 --workers 40
+```
+This is the best way to evaluate the tool — it generates realistic station data, faults, and sessions without needing actual OCPP hardware.
+
+### Change the monitoring interval
+```bash
+# Check every 10 seconds (more responsive)
+python3 ev_monitor.py --interval 10
+python3 ev_monitor.py -i 10
+
+# Check every 60 seconds (lower load)
+python3 ev_monitor.py --interval 60
+```
+
+### Connect to a real OCPP API
+```bash
+# Point at your central system API
+python3 ev_monitor.py --api-base http://your-ocpp-server.com/api --no-sim
+
+# Combine with custom interval and worker count
+python3 ev_monitor.py --api-base http://your-ocpp-server.com/api --no-sim --count 100 --workers 20
+```
+
+### Save reports to a custom directory
+```bash
+python3 ev_monitor.py --output ./reports/
+python3 ev_monitor.py -o /var/log/ev-monitor/
+```
+
+---
+
+## All CLI Flags
+
+| Flag | Short | Description | Default | Example |
+|------|-------|-------------|---------|---------|
+| `--count` | `-n` | Number of endpoints to monitor | `50` | `-n 200` |
+| `--interval` | `-i` | Check interval in seconds | `30` | `-i 10` |
+| `--workers` | `-w` | Concurrent worker threads | `20` | `-w 40` |
+| `--api-base` | | Real API base URL | — | `--api-base http://server/api` |
+| `--no-sim` | | Disable simulator, use real API only | — | `--no-sim` |
+| `--output` | `-o` | Output directory for reports | `.` | `-o ./reports` |
+
+---
+
+## What It Monitors
 
 **Station Health**
 - Online / offline / faulted state per station
 - Connector availability (per-connector granularity)
-- Hardware fault codes with maintenance ticket auto-creation
+- Hardware fault codes with auto-escalation
 - Firmware version drift across fleet
 
 **Session Data**
 - Active sessions: energy delivered (kWh), duration, revenue
-- Session anomalies: stuck sessions, energy delivery failure, payment timeout
-- Historical session export (CSV / JSON) for billing reconciliation
-
-**Network & Comms**
-- OCPP 1.6 / 2.0.1 message latency monitoring
-- WebSocket connection health per station
-- Retry storms and backoff violations
+- Session anomalies: stuck sessions, energy delivery failure
+- Historical export for billing reconciliation
 
 **Alerts**
 - P1 (immediate): Station offline, payment system down
-- P2 (15 min): Connector fault, session stuck > 4h
+- P2 (15 min): Connector fault, session stuck
 - P3 (next business day): Firmware outdated, low utilisation
 
 ---
@@ -40,33 +115,28 @@ Built and tested against networks of **6,000+ endpoints** across multiple geogra
 ## Architecture
 
 ```
-Charging Stations (OCPP) ──▶ Central System Simulator ──▶ Monitor Engine
+Charging Stations (OCPP) ──▶ Central System / Simulator ──▶ Monitor Engine
                                                                │
                                                     ┌──────────┴──────────┐
                                                  Dashboard            Alert Engine
-                                               (terminal UI)      (email/webhook/SMS)
+                                               (terminal UI)      (email/webhook)
 ```
 
 ---
 
-## Run it
+## Troubleshooting
 
-```bash
-git clone https://github.com/SRINIVASAN55/EV-Infrastructure-Monitor
-cd EV-Infrastructure-Monitor
-pip install -r requirements.txt
+**`Connection refused` to API endpoint**
+→ Check that your OCPP central system is running and the URL is correct. Try `curl http://your-server/api` first.
 
-python ev_monitor.py --stations stations.json   # monitor from config file
-python ev_monitor.py --simulate 50              # simulate 50-station network
-python ev_monitor.py --dashboard                # live ops dashboard
-python ev_monitor.py --report --days 7          # weekly ops report
-```
+**Monitor is slow with many stations**
+→ Increase workers: `-w 50`. Each worker handles one station concurrently.
 
----
+**Reports not appearing**
+→ Check the output directory exists and is writable: `mkdir -p ./reports`
 
-## Why it exists
-
-EV charging networks operate 24/7 across hundreds of locations. Traditional IT monitoring tools don't understand OCPP, don't know what a "stuck session" means, and don't have EV-specific alert logic. This tool does.
+**Want to test without any setup?**
+→ Just run `python3 ev_monitor.py` with no flags — it simulates 50 stations automatically.
 
 ---
 
