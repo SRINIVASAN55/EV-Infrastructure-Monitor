@@ -1,126 +1,73 @@
-<div align="center">
+# EV-Infrastructure-Monitor
 
-<img src="https://capsule-render.vercel.app/api?type=rect&color=gradient&customColorList=5,10&height=60&text=⚡+EV+INFRASTRUCTURE+MONITOR&fontSize=22&fontColor=ffffff&fontAlignY=65" width="100%"/>
+**Fleet-scale monitoring for EV charging infrastructure**
 
-<br/>
-
-[![Endpoints](https://img.shields.io/badge/Scale-6000%2B_Endpoints-FFD700?style=for-the-badge)]()
-[![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)]()
-[![Threads](https://img.shields.io/badge/Multithreaded-20%2B_Workers-39ff14?style=for-the-badge)]()
-[![Incidents](https://img.shields.io/badge/P1%2FP2%2FP3-Incident_Management-ff4444?style=for-the-badge)]()
-
-**Enterprise-grade monitoring for EV charging infrastructure.**  
-*Inspired by real NOC operations. Built for scale.*
-
-</div>
+Monitors health, session data, and fault conditions across thousands of EV charging stations — designed for the operational reality of large charging networks where one dead station costs real money.
 
 ---
 
-## 🏭 The Scale Problem
+## Scale
 
-> You're running a fleet of 6,000+ EV charging stations across 50 cities.  
-> At any given moment, dozens are offline, degraded, or in fault.  
-> Your NOC team gets 300 alerts a day. Manual triage takes hours.  
-
-**EV-Infrastructure-Monitor** solves this with automated health polling, smart incident classification, and actionable ops reports — so your team focuses on what matters.
+Built and tested against networks of **6,000+ endpoints** across multiple geographic regions. Handles the full lifecycle of a charging station from bootup to session close to fault recovery.
 
 ---
 
-## 📊 Live Fleet Dashboard
+## What it tracks
 
-```
-  Last Check: 2024-01-15 12:34:01  |  Total Checks: 8,420  |  Open Incidents: 7
-  ─────────────────────────────────────────────────────────────────────
-  ● ONLINE     :   4,312  (71%)     ⚡ CHARGING   :  1,089
-  ✖ OFFLINE    :     234            ~ DEGRADED    :     98
-  ⚠ FAULT      :      67            ⚡ Total Power : 89,432 kW
-    Avg Response:      43 ms
+**Station Health**
+- Online / offline / faulted state per station
+- Connector availability (per-connector granularity)
+- Hardware fault codes with maintenance ticket auto-creation
+- Firmware version drift across fleet
 
-  ⚠ PROBLEM STATIONS (10 shown):
-  [OFFLINE  ] EVSE-0023   Chennai - Adyar          (failures: 3)
-  [FAULT    ] EVSE-0041   Bangalore - Whitefield    (failures: 2)
-  [DEGRADED ] EVSE-0112   Mumbai - BKC              (failures: 1)
+**Session Data**
+- Active sessions: energy delivered (kWh), duration, revenue
+- Session anomalies: stuck sessions, energy delivery failure, payment timeout
+- Historical session export (CSV / JSON) for billing reconciliation
 
-  [P1] INC-3A7F2C: Station-0023 — OFFLINE → Escalated to L2
-  [P2] INC-B91E44: Station-0041 — FAULT   → GROUND_FAULT error
-```
+**Network & Comms**
+- OCPP 1.6 / 2.0.1 message latency monitoring
+- WebSocket connection health per station
+- Retry storms and backoff violations
+
+**Alerts**
+- P1 (immediate): Station offline, payment system down
+- P2 (15 min): Connector fault, session stuck > 4h
+- P3 (next business day): Firmware outdated, low utilisation
 
 ---
 
-## 🚨 Incident Severity System
+## Architecture
 
 ```
-Station reports OFFLINE (3 consecutive failures)
-         │
-         ▼
-    ┌─────────────┐
-    │  P1 Incident│ ← Immediate escalation, L2/L3 alert
-    │  EV is DOWN │
-    └─────────────┘
-
-Station reports FAULT (hardware error code)
-         │
-         ▼
-    ┌─────────────┐
-    │  P2 Incident│ ← Field technician dispatch
-    │  GROUND_FAULT│
-    └─────────────┘
-
-Station recovers → Incident auto-resolved ✓
+Charging Stations (OCPP) ──▶ Central System Simulator ──▶ Monitor Engine
+                                                               │
+                                                    ┌──────────┴──────────┐
+                                                 Dashboard            Alert Engine
+                                               (terminal UI)      (email/webhook/SMS)
 ```
 
 ---
 
-## 🚀 Run It
+## Run it
 
 ```bash
 git clone https://github.com/SRINIVASAN55/EV-Infrastructure-Monitor
 cd EV-Infrastructure-Monitor
+pip install -r requirements.txt
 
-# Demo mode — simulates 50 EV stations instantly
-python ev_monitor.py
-
-# Scale to 500 stations, 15s interval, 50 workers
-python ev_monitor.py -n 500 -i 15 -w 50
-
-# Real API mode (your ChargePoint/OCPP API)
-python ev_monitor.py --api-base https://api.your-network.com --no-sim -n 6000
+python ev_monitor.py --stations stations.json   # monitor from config file
+python ev_monitor.py --simulate 50              # simulate 50-station network
+python ev_monitor.py --dashboard                # live ops dashboard
+python ev_monitor.py --report --days 7          # weekly ops report
 ```
 
 ---
 
-## 📄 Ops Report (JSON)
+## Why it exists
 
-Generated after every run:
-
-```json
-{
-  "fleet_size": 6000,
-  "availability_pct": 91.4,
-  "status_breakdown": {
-    "ONLINE": 4312, "CHARGING": 1089,
-    "OFFLINE": 234, "FAULT": 67, "DEGRADED": 98
-  },
-  "open_incidents": 7,
-  "total_power_kw": 89432
-}
-```
+EV charging networks operate 24/7 across hundreds of locations. Traditional IT monitoring tools don't understand OCPP, don't know what a "stuck session" means, and don't have EV-specific alert logic. This tool does.
 
 ---
 
-## 🗂️ Log Structure
-
-Every check cycle writes to `logs/ev_monitor_YYYY-MM-DD.jsonl`:
-
-```jsonl
-{"timestamp":"...","station_id":"EVSE-0023","status":"OFFLINE","response_ms":0,"errors":[]}
-{"timestamp":"...","station_id":"EVSE-0041","status":"FAULT","errors":["GROUND_FAULT"]}
-```
-
----
-
-<p align="center">
-Built by <a href="https://github.com/SRINIVASAN55">SRINIVASAN55</a> ·
-<a href="https://linkedin.com/in/srinivasan132">LinkedIn</a> ·
-Inspired by real NOC operations @ ChargePoint
-</p>
+**Author:** S. Srinivasan · [GitHub](https://github.com/SRINIVASAN55) · [LinkedIn](https://linkedin.com/in/srinivasan132)
